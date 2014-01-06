@@ -1,0 +1,86 @@
+#!/usr/bin/env python3
+
+import logging
+import socket
+import os
+import threading
+from collections import deque
+import time
+
+logger = logging.getLogger(__name__)
+COMM_IN = 'iona-comm-in.sock'
+COMM_OUT = 'iona-comm-out.sock'
+
+
+def make_sock(addr):
+    try:
+        os.unlink(addr)
+        logger.debug("Removed old socket")
+    except OSError:
+        if os.path.exists(addr):
+            raise
+    sock = socket.socket(socket.AF_UNIX)
+    sock.bind(addr)
+    return sock
+
+
+class Reader(threading.Thread):
+
+    def __init__(self, sock, buffer):
+        super().__init__()
+        self.sock = sock
+        self.buffer = buffer
+
+    def run(self):
+        while True:
+            conn, addr = self.sock.accept()
+            while True:
+                data = conn.recv(2**10)
+                if not data:
+                    break
+                self.buffer.append(data)
+            conn.close()
+
+
+class Writer(threading.Thread):
+
+    def __init__(self, sock, buffer):
+        super().__init__()
+        self.sock = sock
+        self.buffer = buffer
+
+    def run(self):
+        while True:
+            conn, addr = self.sock.accept()
+            while True:
+                if not self.buffer:
+                    time.sleep(1)
+                else:
+                    while self.buffer:
+                        data = self.buffer.popleft()
+                        conn.send(data)
+            conn.close()
+
+
+logging.basicConfig(level='DEBUG')
+
+buffer = deque()
+comm_in = make_sock(COMM_IN)
+comm_out = make_sock(COMM_OUT)
+comm_in.listen(5)
+comm_out.listen(5)
+
+r = Reader(comm_in, buffer)
+w = Writer(comm_out, buffer)
+
+r.start()
+w.start()
+r.join()
+w.join()
+
+import sys
+sys.exit()
+
+logger.info("Initializing iona...")
+from iona import main
+main.main()

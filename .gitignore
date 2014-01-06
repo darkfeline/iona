@@ -1,0 +1,17 @@
+/build/
+/dist/
+/MANIFEST
+/install/
+
+__pycache__
+*.py[co]
+.ropeproject
+
+#*#
+*.sw[po]
+
+/virt-env/
+*.org
+*.dat
+*.sock
+*.xoj
