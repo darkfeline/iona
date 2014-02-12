@@ -13,5 +13,6 @@ setup(
     url='http://abagofapples.com/',
     package_dir={'': 'src'},
     packages=['iona'],
-    scripts=[os.path.join(scriptdir, x) for x in os.listdir(scriptdir)],
+    scripts=[os.path.join(scriptdir, x) for x in os.listdir(scriptdir)
+             if not x.startswith('.')],
 )

@@ -7,11 +7,8 @@ __pycache__
 *.py[co]
 .ropeproject
 
-#*#
 *.sw[po]
 
 /virt-env/
-*.org
-*.dat
-*.sock
-*.xoj
+/*.json
+/*.sock
