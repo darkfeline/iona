@@ -87,8 +87,11 @@ class Iona:
     def run(self, dt):
         if self.in_buffer:
             mesg = self.in_buffer.read().decode()
+            self.emotions['happiness'].increase(2)
             if mesg is not None:
                 self.out_buffer.write(','.join((
                     mesg,
                     "Happiness: {}".format(self.emotions['happiness'].value)
                 )).encode())
+        for e in self.emotions:
+            self.emotions[e].decay(dt)
